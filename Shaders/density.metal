@@ -11,11 +11,7 @@ using namespace metal;
 #include "Common.h"
 #include "Kernel.h"
 
-constant const float gamma = 7.0f;
-constant const float speedSound = 1500.0f;
-constant const float B = restDensity * speedSound / gamma ;
-
-kernel void density_main(constant const float2 *positions [[buffer(PositionBuffer)]],
+kernel void density_main(constant const float2 *positions [[buffer(PositionKBuffer)]],
                          device float *densities [[buffer(DensityBuffer)]],
                          device float *pressures [[buffer(PressureBuffer)]],
                          constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
@@ -42,6 +38,5 @@ kernel void density_main(constant const float2 *positions [[buffer(PositionBuffe
     
     density *= M;
     densities[id] = density;
-    pressures[id] = max(B * (pow(density / restDensity, gamma) - 1.0f), 0.0f);
-    //pressures[id] = max(speedSound * (density - restDensity), 0.0f);
+    pressures[id] = stiffness * (density - restDensity);
 }

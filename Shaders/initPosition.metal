@@ -7,6 +7,7 @@ using namespace metal;
 
 // Compute shader kernel to initialize particle positions
 kernel void init_position(device float2 *positionBuffer [[buffer(PositionBuffer)]],
+                          device float2 *positionKBuffer [[buffer(PositionKBuffer)]],
                           constant const InitPositionConstants &constants [[buffer(ConstantBuffer)]],
                           uint id [[thread_position_in_grid]])
 {
@@ -35,4 +36,5 @@ kernel void init_position(device float2 *positionBuffer [[buffer(PositionBuffer)
 
     // Write the position to the buffer
     positionBuffer[id] = position;
+    positionKBuffer[id] = position;
 }
