@@ -10,6 +10,7 @@ import MetalKit
 class PhysicRenderPass {
     // Pipeline state objects
     var initPositionPSO: MTLComputePipelineState
+    var spatialHashPSO: MTLComputePipelineState
     var densityPSO: MTLComputePipelineState
     var forcePSO: MTLComputePipelineState
     var rk4Step1PSO: MTLComputePipelineState
@@ -31,6 +32,8 @@ class PhysicRenderPass {
     var forceK2Buffer: MTLBuffer
     var forceK3Buffer: MTLBuffer
     var forceK4Buffer: MTLBuffer
+    //var spatialIndicesBuffer: MTLBuffer
+    //var spatialOffsetsBuffer: MTLBuffer
     
     // Argument Buffer
     
@@ -40,34 +43,31 @@ class PhysicRenderPass {
     let particleNumber: Int
     let threadgroupSize: MTLSize
     let threadgroupCount: MTLSize
-    let dt: Float
 
     init(device: MTLDevice, commandQueue: MTLCommandQueue, particleNumber: Int, camera: OrthographicCamera) {
         
         // Constants
         self.particleNumber = particleNumber
-        self.dt = 0.0001;
 
         // Create compute pipeline states
-        self.densityPSO = PipelineStates.createComputePSO(function: "density_main")
-        self.forcePSO = PipelineStates.createComputePSO(function: "force_main")
+        self.spatialHashPSO = PipelineStates.createComputePSO(function: "spatial_hash")
+        self.densityPSO = PipelineStates.createComputePSO(function: "density")
+        self.forcePSO = PipelineStates.createComputePSO(function: "force")
         self.rk4Step1PSO = PipelineStates.createComputePSO(function: "rk4_step1")
         self.rk4Step2PSO = PipelineStates.createComputePSO(function: "rk4_step2")
         self.rk4Step3PSO = PipelineStates.createComputePSO(function: "rk4_step3")
         self.rk4FinalPSO = PipelineStates.createComputePSO(function: "integrateRK4Results")
         self.initPositionPSO = PipelineStates.createComputePSO(function: "init_position")
-        self.collisionPSO = PipelineStates.createComputePSO(function: "collision_main")
+        self.collisionPSO = PipelineStates.createComputePSO(function: "collision")
 
         // Buffers
-        guard       
-            // Initialize position and velocity buffers
+        guard
+            // Initialize position buffer
             let positionBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
-            let velocityBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
-            
-            // Initialize RK4 position buffer
             let positionKBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
 
-            // Initialize RK4 velocity buffers
+            // Initialize velocity buffers
+            let velocityBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
             let velocityK1Buffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
             let velocityK2Buffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
             let velocityK3Buffer = device.makeBuffer(length: particleNumber * MemoryLayout<float2>.stride, options: .storageModePrivate),
@@ -80,7 +80,11 @@ class PhysicRenderPass {
             
             // Initialize Physics buffers
             let densityBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<Float>.stride, options: .storageModePrivate),
-            let pressureBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<Float>.stride, options: .storageModePrivate)
+            let pressureBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<Float>.stride, options: .storageModePrivate)//,
+                
+            // Initialize Hash buffers
+            //let spatialIndicesBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<vector_uint3>.stride, options: .storageModePrivate),
+            //let spatialOffsetsBuffer = device.makeBuffer(length: particleNumber * MemoryLayout<UInt>.stride, options: .storageModePrivate)
         else {
             fatalError("Failed to create one or more buffers")
         }
@@ -102,6 +106,10 @@ class PhysicRenderPass {
         // Physics buffers
         self.densityBuffer = densityBuffer
         self.pressureBuffer = pressureBuffer
+        
+        // Hash buffers
+        //self.spatialIndicesBuffer = spatialIndicesBuffer
+        //self.spatialOffsetsBuffer = spatialOffsetsBuffer
 
         // Calculate threadgroup sizes
         self.threadgroupSize = MTLSize(width: 1024, height: 1, depth: 1)
@@ -120,8 +128,6 @@ class PhysicRenderPass {
         
         // Bind Buffers
             // Constants
-        var dt: Float = self.dt
-        encoder.setBytes(&dt, length: MemoryLayout<Float>.stride, index: DTBuffer.index)
         var numParticles = UInt32(self.particleNumber)
         encoder.setBytes(&numParticles, length: MemoryLayout<UInt32>.stride, index: NumParticlesBuffer.index)
             // Physics
@@ -139,6 +145,15 @@ class PhysicRenderPass {
         encoder.setBuffer(forceK2Buffer, offset: 0, index: ForceK2Buffer.index)
         encoder.setBuffer(forceK3Buffer, offset: 0, index: ForceK3Buffer.index)
         encoder.setBuffer(forceK4Buffer, offset: 0, index: ForceK4Buffer.index)
+            // Hash
+        //encoder.setBuffer(spatialIndicesBuffer, offset: 0, index: SpatialIndicesBuffer.index)
+        //encoder.setBuffer(spatialOffsetsBuffer, offset: 0, index: SpatialOffsetsBuffer.index)
+        
+        // TODO: Implement Neighborhood Search
+        //encoder.setComputePipelineState(self.spatialHashPSO)
+        //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+        // Sort Particules
+        // Reorganise particules
         
         // RK4 Step Computation
         //{

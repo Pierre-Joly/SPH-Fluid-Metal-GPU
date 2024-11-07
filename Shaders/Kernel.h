@@ -12,11 +12,17 @@
 using namespace metal;
 
 // Physics constants
+constant const float mass = 1.0f;
 constant const float PI = 3.1415927f;
 constant const float volume = 0.5f;
-constant const float h = 0.05f;
+constant const float h = 0.05f;  // Kernel Radius
 constant const float restDensity = 1000.0f;
-constant const float stiffness = 1.0f;
+constant const float stiffness = 1e5f;
+constant const float dt = 1e-4f;
+constant const float2 g = float2(0.0f, -9.81f);
+constant const float gravityK = 1e5f;
+constant const float viscosityCoefficient = 1.0f;
+constant const float nearStiffness = 1e-6 * stiffness;
 
 // Precomputed constants
 constant float h2 = h * h;
@@ -28,15 +34,15 @@ constant float h8 = h5 * h3;
 // Viscosity Laplacian Kernel - Laplacian of
 inline float ViscosityLaplacianKernel(float r)
 {
-    return (3.0f / (PI * h3)) * (h - r);
+    return (20.0f / (PI * h5)) * (h - r);
 }
 
 // Pressure Gradient Kernel - Gradient of Spiky kernel 2D
 inline float2 PressureGradientKernel(float2 vec, float r)
 {
-    if (r > 0.0f) {
+    if (r > 0.0f){
         float h_minus_dist = h - r;
-        float coeff = (6.0f / (PI * h4)) * h_minus_dist * h_minus_dist;
+        float coeff = (30.0f / (PI * h5)) * h_minus_dist * h_minus_dist;
         return -coeff * vec / r;
     }
     return float2(0, 0);
@@ -45,7 +51,7 @@ inline float2 PressureGradientKernel(float2 vec, float r)
 // Near-Pressure Gradient Kernel
 inline float2 NearPressureGradientKernel(float2 vec, float r)
 {
-    if (r > 0.0f) {
+    if (r > 0.0f){
         float h_minus_dist = h - r;
         float coeff = (10.0f / (PI * h5)) * h_minus_dist * h_minus_dist * h_minus_dist;
         return -coeff * vec / r;

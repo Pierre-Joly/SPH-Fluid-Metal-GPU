@@ -11,11 +11,11 @@ using namespace metal;
 #include "Common.h"
 #include "Kernel.h"
 
-kernel void density_main(constant const float2 *positions [[buffer(PositionKBuffer)]],
-                         device float *densities [[buffer(DensityBuffer)]],
-                         device float *pressures [[buffer(PressureBuffer)]],
-                         constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
-                         uint id [[thread_position_in_grid]])
+kernel void density(constant const float2 *positions [[buffer(PositionKBuffer)]],
+                    device float *densities [[buffer(DensityBuffer)]],
+                    device float *pressures [[buffer(PressureBuffer)]],
+                    constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
+                    uint id [[thread_position_in_grid]])
 {
     if (id >= numParticles) {
         return;
@@ -32,11 +32,10 @@ kernel void density_main(constant const float2 *positions [[buffer(PositionKBuff
         float radius = length(vector);
 
         if (radius < h) {
-            density += DensityKernel(radius);
+            density += M * DensityKernel(radius);
         }
     }
     
-    density *= M;
     densities[id] = density;
     pressures[id] = stiffness * (density - restDensity);
 }

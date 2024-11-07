@@ -10,8 +10,8 @@
 
 #include <simd/simd.h>
 
+// Size of particles
 #define size 0.005f
-#define mass 1.0f
 
 typedef enum BufferIndices {
     VertexBuffer = 0,
@@ -32,7 +32,9 @@ typedef enum BufferIndices {
     ForceK1Buffer = 19,
     ForceK2Buffer = 20,
     ForceK3Buffer = 21,
-    ForceK4Buffer = 22
+    ForceK4Buffer = 22,
+    SpatialIndicesBuffer = 23,
+    SpatialOffsetsBuffer = 24
 } BufferIndices;
 
 typedef struct {

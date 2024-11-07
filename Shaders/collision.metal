@@ -14,10 +14,10 @@ constant float box = 0.5f;
 constant float damping = 0.7f;
 constant float dist = box - 10*size;
 
-kernel void collision_main(device float2 *velocities [[buffer(VelocityBuffer)]],
-                           device float2 *positions [[buffer(PositionBuffer)]],
-                           constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
-                           uint id [[thread_position_in_grid]])
+kernel void collision(device float2 *velocities [[buffer(VelocityBuffer)]],
+                      device float2 *positions [[buffer(PositionBuffer)]],
+                      constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
+                      uint id [[thread_position_in_grid]])
 {
     if (id >= numParticles) {
         return;

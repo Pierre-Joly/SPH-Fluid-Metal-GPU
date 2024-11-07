@@ -11,18 +11,13 @@ using namespace metal;
 #include "Common.h"
 #include "Kernel.h"
 
-// Constants
-constant const float2 g = float2(0.0f, -9.81f);
-constant const float viscosityCoefficient = 1000.0f;
-constant const float gravityK = 1000.0f;
-
-kernel void force_main(device const float *pressures [[buffer(PressureBuffer)]],
-                       device const float2 *positions [[buffer(PositionKBuffer)]],
-                       device const float2 *velocities [[buffer(VelocityBuffer)]],
-                       device const float *densities [[buffer(DensityBuffer)]],
-                       device float2 *forces [[buffer(ForceBuffer)]],
-                       constant uint &numParticles [[buffer(NumParticlesBuffer)]],
-                       uint id [[thread_position_in_grid]])
+kernel void force(device const float *pressures [[buffer(PressureBuffer)]],
+                  device const float2 *positions [[buffer(PositionKBuffer)]],
+                  device const float2 *velocities [[buffer(VelocityBuffer)]],
+                  device const float *densities [[buffer(DensityBuffer)]],
+                  device float2 *forces [[buffer(ForceBuffer)]],
+                  constant uint &numParticles [[buffer(NumParticlesBuffer)]],
+                  uint id [[thread_position_in_grid]])
 {
     if (id >= numParticles) {
         return;
@@ -59,9 +54,8 @@ kernel void force_main(device const float *pressures [[buffer(PressureBuffer)]],
             
             // Near Pressure force
             gradW = NearPressureGradientKernel(vector, radius);
-            pressureTerm = M * stiffness * density;
+            pressureTerm = M * nearStiffness * density;
             pressureForce -= pressureTerm * gradW;
-            
 
             // Viscosity force
             float laplacianW = ViscosityLaplacianKernel(radius);
