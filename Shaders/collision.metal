@@ -12,7 +12,7 @@ using namespace metal;
 
 constant float box = 0.5f;
 constant float damping = 0.7f;
-constant float dist = box - 10*size;
+constant float dist = box;
 
 kernel void collision(device float2 *velocities [[buffer(VelocityBuffer)]],
                       device float2 *positions [[buffer(PositionBuffer)]],

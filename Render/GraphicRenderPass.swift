@@ -51,7 +51,7 @@ struct GraphicRenderPass {
             self.uniforms = uniforms
             
             // Create the circle texture
-            self.circleTexture = GraphicRenderPass.createCircleTexture(device: device, size: 64)
+            self.circleTexture = GraphicRenderPass.createCircleTexture(device: device, size: 4)
             
             // Create the sampler state
             let samplerDescriptor = MTLSamplerDescriptor()
@@ -73,6 +73,7 @@ struct GraphicRenderPass {
             guard let vertexArgumentBuffer = device.makeBuffer(length: argumentBufferLength, options: []) else {
                 fatalError("Failed to create argument buffer")
             }
+        
             self.vertexArgumentBuffer = vertexArgumentBuffer
             vertexArgumentEncoder.setArgumentBuffer(vertexArgumentBuffer, offset: 0)
             

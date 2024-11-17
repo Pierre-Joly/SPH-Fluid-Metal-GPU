@@ -8,42 +8,21 @@
 #ifndef Hash_h
 #define Hash_h
 
-// Constants used for hashing
-constant const uint hashK1 = 15823;
-constant const uint hashK2 = 9737333;
+#include "Kernel.h"
 
-// Helper function
+// Define maximum particles per cell to prevent buffer overflow
+constant const uint maxParticlesPerCell = 200;
+constant const float cellSize = h/2;
+constant const float2 minBound = float2(-0.5, -0.5);
+constant const float2 maxBound = float2(0.5, 0.5);
+constant const uint gridDimX = uint((maxBound.x - minBound.x) / cellSize);
+constant const uint gridDimY = uint((maxBound.y - minBound.y) / cellSize);
+constant const uint2 gridDims = uint2(gridDimX, gridDimY);
+constant const uint totalGridCells = (gridDims.x + 1) * (gridDims.y + 1);
 
-constant const int2 offsets2D[9] =
-{
-    int2(-1, 1),
-    int2(0, 1),
-    int2(1, 1),
-    int2(-1, 0),
-    int2(0, 0),
-    int2(1, 0),
-    int2(-1, -1),
-    int2(0, -1),
-    int2(1, -1),
-};
-
-// Convert floating point position into an integer cell coordinate
-uint2 GetCell2D(float2 position, float radius)
-{
-    return (uint2)floor(position / radius);
-}
-
-// Hash cell coordinate to a single unsigned integer
-uint HashCell2D(uint2 cell)
-{
-    uint a = cell.x * hashK1;
-    uint b = cell.y * hashK2;
-    return (a + b);
-}
-
-uint KeyFromHash(uint hash, uint tableSize)
-{
-    return hash % tableSize;
+// Helper function to compute grid hash from grid indices
+inline uint computeHash(uint2 gridIndex) {
+    return gridIndex.y * gridDims.x + gridIndex.x;
 }
 
 #endif /* Hash_h */

@@ -39,7 +39,7 @@ vertex VertexOut vertex_main(constant Uniforms& uniforms [[buffer(UniformsBuffer
     float3 colorMedium = float3(0.0, 1.0, 0.0);
     float3 colorFast = float3(1.0, 0.0, 0.0);
     float speed = length(particleVelocity);
-    float t = clamp(speed / 50, 0.0, 1.0);
+    float t = clamp(speed / 100, 0.0, 1.0);
     float3 color = (t < 0.5) ? mix(colorSlow, colorMedium, t * 2.0) : mix(colorMedium, colorFast, (t - 0.5) * 2.0);
 
     // Prepare the output

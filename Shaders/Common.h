@@ -33,8 +33,9 @@ typedef enum BufferIndices {
     ForceK2Buffer = 20,
     ForceK3Buffer = 21,
     ForceK4Buffer = 22,
-    SpatialIndicesBuffer = 23,
-    SpatialOffsetsBuffer = 24
+    GridCountsBuffer = 23,
+    GridParticleIndicesBuffer = 24,
+    TotalGridCellsBuffer = 25
 } BufferIndices;
 
 typedef struct {

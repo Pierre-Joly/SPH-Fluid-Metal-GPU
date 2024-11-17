@@ -8,6 +8,7 @@ import CoreGraphics
 // swiftlint:disable identifier_name
 // swiftlint:disable comma
 
+typealias uint2 = SIMD2<uint>
 typealias float2 = SIMD2<Float>
 typealias float3 = SIMD3<Float>
 typealias float4 = SIMD4<Float>
