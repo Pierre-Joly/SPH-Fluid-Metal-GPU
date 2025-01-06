@@ -201,12 +201,12 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 2
             // {
             // Reset GridCounts to zero
-            encoder.setComputePipelineState(self.initCountGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.initCountGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK1Buffer, offset: 0, index: VelocityBuffer.index)
@@ -231,12 +231,12 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 3
             // {
             // Reset GridCounts to zero
-            encoder.setComputePipelineState(self.initCountGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.initCountGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK2Buffer, offset: 0, index: VelocityBuffer.index)
@@ -261,12 +261,12 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 4
             // {
             // Reset GridCounts to zero
-            encoder.setComputePipelineState(self.initCountGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.initCountGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK3Buffer, offset: 0, index: VelocityBuffer.index)
