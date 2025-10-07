@@ -1,10 +1,3 @@
-//
-//  Hash.h
-//  SPH
-//
-//  Created by Pierre joly on 02/11/2024.
-//
-
 #ifndef Hash_h
 #define Hash_h
 
@@ -12,7 +5,7 @@
 
 // Define maximum particles per cell to prevent buffer overflow
 constant const uint maxParticlesPerCell = 200;
-constant const float cellSize = h/2;
+constant const float cellSize = h;
 constant const float2 minBound = float2(-0.5, -0.5);
 constant const float2 maxBound = float2(0.5, 0.5);
 constant const uint gridDimX = uint((maxBound.x - minBound.x) / cellSize);

@@ -1,10 +1,3 @@
-//
-//  collision.metal
-//  SPH
-//
-//  Created by Pierre Joly on 19/09/2024.
-//
-
 #include <metal_stdlib>
 using namespace metal;
 

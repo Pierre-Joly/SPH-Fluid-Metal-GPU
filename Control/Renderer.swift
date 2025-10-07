@@ -13,7 +13,7 @@ class Renderer: NSObject {
     static var library: MTLLibrary!
 
     var camera = OrthographicCamera()
-    let particleNumber: Int = 16384
+    let particleNumber: Int = 8192
     
     var physicRenderPass: PhysicRenderPass
     var graphicRenderPass: GraphicRenderPass

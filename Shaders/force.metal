@@ -1,10 +1,3 @@
-//
-//  force.metal
-//  SPH
-//
-//  Created by Pierre Joly on 28/08/2024.
-//
-
 #include <metal_stdlib>
 using namespace metal;
 
@@ -12,13 +5,13 @@ using namespace metal;
 #include "Kernel.h"
 #include "Hash.h"
 
-kernel void force(constant const float *pressures [[buffer(PressureBuffer)]],
-                  constant const float2 *positions [[buffer(PositionKBuffer)]],
-                  constant const float2 *velocities [[buffer(VelocityBuffer)]],
-                  constant const float *densities [[buffer(DensityBuffer)]],
+kernel void force(device const float *pressures [[buffer(PressureBuffer)]],
+                  device const float2 *positions [[buffer(PositionKBuffer)]],
+                  device const float2 *velocities [[buffer(VelocityBuffer)]],
+                  device const float *densities [[buffer(DensityBuffer)]],
                   device float2 *forces [[buffer(ForceBuffer)]],
-                  constant const uint *gridCounts [[buffer(GridCountsBuffer)]],
-                  constant const uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
+                  device const uint *gridCounts [[buffer(GridCountsBuffer)]],
+                  device const uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
                   constant uint &numParticles [[buffer(NumParticlesBuffer)]],
                   uint id [[thread_position_in_grid]])
 {

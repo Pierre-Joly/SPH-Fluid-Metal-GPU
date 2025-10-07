@@ -23,7 +23,7 @@ vertex VertexOut vertex_main(constant Uniforms& uniforms [[buffer(UniformsBuffer
     float2 particleVelocity = vertexArgument.velocities[instanceId];
 
     // Quad size
-    float2 quadSize = float2(size); // Adjust as needed
+    float2 quadSize = float2(PARTICLE_SIZE); // Adjust as needed
 
     // Compute world position
     float2 position_2D = vtx.position * quadSize + particlePosition;

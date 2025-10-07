@@ -129,8 +129,8 @@ class PhysicRenderPass {
         self.pressureBuffer = pressureBuffer
 
         // Calculate threadgroup sizes
-        self.threadgroupSize = MTLSize(width: 1024, height: 1, depth: 1)
-        self.threadgroupCount = MTLSize(width: (self.particleNumber / self.threadgroupSize.width) + 1, height: 1, depth: 1)
+        self.threadgroupSize = MTLSize(width: 256, height: 1, depth: 1)
+        self.threadgroupCount = MTLSize(width: (Int(self.particleNumber) / self.threadgroupSize.width) + 1, height: 1, depth: 1)
         self.threadgroupCountGrid = MTLSize(width: (self.totalGridCells / self.threadgroupSize.width) + 1, height: 1, depth: 1)
 
         // Initialize positions using compute shader
@@ -176,6 +176,7 @@ class PhysicRenderPass {
             encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
+            encoder.setBuffer(self.positionBuffer,  offset: 0, index: PositionBuffer.index)
             encoder.setComputePipelineState(self.assignParticlesToGridPSO)
             encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
@@ -201,12 +202,13 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 2
             // {
             // Reset GridCounts to zero
-            //encoder.setComputePipelineState(self.initCountGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setComputePipelineState(self.initCountGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setBuffer(self.positionKBuffer, offset: 0, index: PositionBuffer.index)
+            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK1Buffer, offset: 0, index: VelocityBuffer.index)
@@ -231,16 +233,16 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 3
             // {
             // Reset GridCounts to zero
-            //encoder.setComputePipelineState(self.initCountGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setComputePipelineState(self.initCountGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setBuffer(self.positionKBuffer, offset: 0, index: PositionBuffer.index)
+            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK2Buffer, offset: 0, index: VelocityBuffer.index)
-            
             
             // Density Calculation
             encoder.setComputePipelineState(self.densityPSO)
@@ -261,12 +263,13 @@ class PhysicRenderPass {
             // Runge Kutta 4 - Step 4
             // {
             // Reset GridCounts to zero
-            //encoder.setComputePipelineState(self.initCountGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setComputePipelineState(self.initCountGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCountGrid, threadsPerThreadgroup: self.threadgroupSize)
         
             // Neighborhood Search
-            //encoder.setComputePipelineState(self.assignParticlesToGridPSO)
-            //encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
+            encoder.setBuffer(self.positionKBuffer, offset: 0, index: PositionBuffer.index)
+            encoder.setComputePipelineState(self.assignParticlesToGridPSO)
+            encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
         
             // Density Buffer Binding
             encoder.setBuffer(self.velocityK3Buffer, offset: 0, index: VelocityBuffer.index)
@@ -285,6 +288,10 @@ class PhysicRenderPass {
         //}
         
         // Final Integration Buffers Binding
+        
+            // Positions
+        encoder.setBuffer(self.positionBuffer,  offset: 0, index: PositionBuffer.index)
+        
             // Velocities
         encoder.setBuffer(self.velocityBuffer, offset: 0, index: VelocityBuffer.index)
         
@@ -317,12 +324,12 @@ extension PhysicRenderPass {
         encoder.setBuffer(self.positionKBuffer, offset: 0, index: PositionKBuffer.index)
 
         // Set constants sending
-        var constants = InitPositionConstants(
-            particleNumber: UInt32(self.particleNumber),
-            viewWidth: Float(camera.viewSize) * Float(camera.aspect),
-            viewHeight: Float(camera.viewSize)
-        )
-        encoder.setBytes(&constants, length: MemoryLayout<InitPositionConstants>.stride, index: ConstantBuffer.index)
+        var numParticles = UInt32(self.particleNumber)
+        encoder.setBytes(&numParticles, length: MemoryLayout<UInt32>.stride, index: NumParticlesBuffer.index)
+        var viewWidth = Float(camera.viewSize) * Float(camera.aspect)
+        encoder.setBytes(&viewWidth, length: MemoryLayout<Float>.stride, index: ViewWidthBuffer.index)
+        var viewHeight = Float(camera.viewSize)
+        encoder.setBytes(&viewHeight, length: MemoryLayout<Float>.stride, index: ViewHeightBuffer.index)
 
         // Dispatch threads
         encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)

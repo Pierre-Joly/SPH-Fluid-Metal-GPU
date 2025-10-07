@@ -1,10 +1,3 @@
-//
-//  Kernel.h
-//  SPH
-//
-//  Created by Pierre Joly on 20/09/2024.
-//
-
 #ifndef KERNEL_H
 #define KERNEL_H
 

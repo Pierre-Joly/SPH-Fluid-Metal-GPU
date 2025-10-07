@@ -1,16 +1,10 @@
-//
-//  assignParticlesToGrid.metal
-//  SPH
-//
-//  Created by Pierre joly on 07/11/2024.
-//
 #include <metal_stdlib>
 #include "Hash.h"
 #include "Common.h"
 using namespace metal;
 
 kernel void assign_particles_to_grid(
-    constant const float2 *positions [[buffer(PositionKBuffer)]],
+    device const float2 *positions [[buffer(PositionBuffer)]],
     device atomic_uint *gridCounts [[buffer(GridCountsBuffer)]],
     device uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
     constant const uint &numParticles [[buffer(NumParticlesBuffer)]],

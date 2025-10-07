@@ -1,10 +1,3 @@
-//
-//  density.metal
-//  SPH
-//
-//  Created by Pierre Joly on 28/08/2024.
-//
-
 #include <metal_stdlib>
 using namespace metal;
 
@@ -12,11 +5,11 @@ using namespace metal;
 #include "Kernel.h"
 #include "Hash.h"
 
-kernel void density(constant const float2 *positions [[buffer(PositionKBuffer)]],
+kernel void density(device const float2 *positions [[buffer(PositionKBuffer)]],
                     device float *densities [[buffer(DensityBuffer)]],
                     device float *pressures [[buffer(PressureBuffer)]],
-                    constant const uint *gridCounts [[buffer(GridCountsBuffer)]],
-                    constant const uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
+                    device const uint *gridCounts [[buffer(GridCountsBuffer)]],
+                    device const uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
                     constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                     uint id [[thread_position_in_grid]])
 {

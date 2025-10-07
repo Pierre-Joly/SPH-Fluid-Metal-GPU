@@ -1,10 +1,3 @@
-//
-//  initGridCounts.metal
-//  SPH
-//
-//  Created by Pierre joly on 07/11/2024.
-//
-
 #include <metal_stdlib>
 #include "Common.h"
 #include "Hash.h"

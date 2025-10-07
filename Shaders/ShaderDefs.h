@@ -1,10 +1,3 @@
-//
-//  ShaderDefs.h
-//  SPH
-//
-//  Created by Pierre joly on 26/08/2024.
-//
-
 #ifndef ShaderDefs_h
 #define ShaderDefs_h
 

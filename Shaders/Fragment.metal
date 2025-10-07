@@ -1,10 +1,3 @@
-//
-//  Fragment.metal
-//  SPH
-//
-//  Created by Pierre joly on 26/08/2024.
-//
-
 #include <metal_stdlib>
 using namespace metal;
 

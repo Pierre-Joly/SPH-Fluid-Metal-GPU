@@ -1,21 +1,14 @@
-//
-//  integration.metal
-//  SPH
-//
-//  Created by Pierre Joly on 28/08/2024.
-//
-
 #include <metal_stdlib>
 using namespace metal;
 
 #include "Common.h"
 #include "Kernel.h"
 
-kernel void rk4_step1(constant const float2 *positions [[buffer(PositionBuffer)]],
-                      constant const float2 *velocities [[buffer(VelocityBuffer)]],
+kernel void rk4_step1(device const float2 *positions [[buffer(PositionBuffer)]],
+                      device const float2 *velocities [[buffer(VelocityBuffer)]],
                       device float2 *velocitiesK1 [[buffer(VelocityK1Buffer)]],
                       device float2 *positionsK [[buffer(PositionKBuffer)]],
-                      constant const float2 *forcesK1 [[buffer(ForceK1Buffer)]],
+                      device const float2 *forcesK1 [[buffer(ForceK1Buffer)]],
                       constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                       uint id [[thread_position_in_grid]]) {
     if (id >= numParticles) return;
@@ -25,12 +18,12 @@ kernel void rk4_step1(constant const float2 *positions [[buffer(PositionBuffer)]
     positionsK[id] = positions[id] + 0.5f * dt * velocities[id];
 }
 
-kernel void rk4_step2(constant const float2 *positions [[buffer(PositionBuffer)]],
-                      constant const float2 *velocities [[buffer(VelocityBuffer)]],
+kernel void rk4_step2(device const float2 *positions [[buffer(PositionBuffer)]],
+                      device const float2 *velocities [[buffer(VelocityBuffer)]],
                       device float2 *velocitiesK2 [[buffer(VelocityK2Buffer)]],
                       device float2 *positionsK [[buffer(PositionKBuffer)]],
-                      constant const float2 *velocitiesK1 [[buffer(VelocityK1Buffer)]],
-                      constant const float2 *forcesK2 [[buffer(ForceK2Buffer)]],
+                      device const float2 *velocitiesK1 [[buffer(VelocityK1Buffer)]],
+                      device const float2 *forcesK2 [[buffer(ForceK2Buffer)]],
                       constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                       uint id [[thread_position_in_grid]]) {
     if (id >= numParticles) return;
@@ -40,12 +33,12 @@ kernel void rk4_step2(constant const float2 *positions [[buffer(PositionBuffer)]
     positionsK[id] = positions[id] + 0.5f * dt * velocitiesK1[id];
 }
 
-kernel void rk4_step3(constant const float2 *positions [[buffer(PositionBuffer)]],
-                      constant const float2 *velocities [[buffer(VelocityBuffer)]],
+kernel void rk4_step3(device const float2 *positions [[buffer(PositionBuffer)]],
+                      device const float2 *velocities [[buffer(VelocityBuffer)]],
                       device float2 *velocitiesK3 [[buffer(VelocityK3Buffer)]],
                       device float2 *positionsK [[buffer(PositionKBuffer)]],
-                      constant const float2 *velocitiesK2 [[buffer(VelocityK2Buffer)]],
-                      constant const float2 *forcesK3 [[buffer(ForceK3Buffer)]],
+                      device const float2 *velocitiesK2 [[buffer(VelocityK2Buffer)]],
+                      device const float2 *forcesK3 [[buffer(ForceK3Buffer)]],
                       constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                       uint id [[thread_position_in_grid]]) {
     if (id >= numParticles) return;
@@ -57,13 +50,13 @@ kernel void rk4_step3(constant const float2 *positions [[buffer(PositionBuffer)]
 
 kernel void integrateRK4Results(device float2 *positions [[buffer(PositionBuffer)]],
                                 device float2 *velocities [[buffer(VelocityBuffer)]],
-                                constant const float2 *velocitiesK1 [[buffer(VelocityK1Buffer)]],
-                                constant const float2 *velocitiesK2 [[buffer(VelocityK2Buffer)]],
-                                constant const float2 *velocitiesK3 [[buffer(VelocityK3Buffer)]],
-                                constant const float2 *forcesK1 [[buffer(ForceK1Buffer)]],
-                                constant const float2 *forcesK2 [[buffer(ForceK2Buffer)]],
-                                constant const float2 *forcesK3 [[buffer(ForceK3Buffer)]],
-                                constant const float2 *forcesK4 [[buffer(ForceK4Buffer)]],
+                                device const float2 *velocitiesK1 [[buffer(VelocityK1Buffer)]],
+                                device const float2 *velocitiesK2 [[buffer(VelocityK2Buffer)]],
+                                device const float2 *velocitiesK3 [[buffer(VelocityK3Buffer)]],
+                                device const float2 *forcesK1 [[buffer(ForceK1Buffer)]],
+                                device const float2 *forcesK2 [[buffer(ForceK2Buffer)]],
+                                device const float2 *forcesK3 [[buffer(ForceK3Buffer)]],
+                                device const float2 *forcesK4 [[buffer(ForceK4Buffer)]],
                                 constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                                 uint id [[thread_position_in_grid]]) {
     if (id >= numParticles) return;
