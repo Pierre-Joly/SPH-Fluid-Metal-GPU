@@ -1,10 +1,3 @@
-//
-//  GraphicRenderPass.swift
-//  SPH
-//
-//  Created by Pierre joly on 28/08/2024.
-//
-
 import MetalKit
 
 struct GraphicRenderPass {

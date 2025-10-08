@@ -3,89 +3,92 @@ using namespace metal;
 
 #include "Common.h"
 #include "Kernel.h"
-#include "Hash.h"
 
-kernel void force(device const float *pressures [[buffer(PressureBuffer)]],
-                  device const float2 *positions [[buffer(PositionKBuffer)]],
-                  device const float2 *velocities [[buffer(VelocityBuffer)]],
-                  device const float *densities [[buffer(DensityBuffer)]],
-                  device float2 *forces [[buffer(ForceBuffer)]],
-                  device const uint *gridCounts [[buffer(GridCountsBuffer)]],
-                  device const uint *gridParticleIndices [[buffer(GridParticleIndicesBuffer)]],
-                  constant uint &numParticles [[buffer(NumParticlesBuffer)]],
-                  uint id [[thread_position_in_grid]])
-{
-    if (id >= numParticles) {
-        return;
-    }
+kernel void force(
+    // Inputs
+    device const float  *pressures            [[buffer(PressureBuffer)]],
+    device const float2 *positions            [[buffer(PositionBuffer)]],
+    device const float2 *velocities           [[buffer(VelocityBuffer)]],
+    device const float  *densities            [[buffer(DensityBuffer)]],
 
-    thread float M = volume * restDensity / numParticles;
+    // Output
+    device float2       *forces               [[buffer(ForceBuffer)]],
 
-    thread float2 position = positions[id];
-    thread float2 velocity = velocities[id];
-    thread float pressure = pressures[id];
-    thread float density = densities[id];
+    // Range-based neighbor data
+    device const uint   *cellStart            [[buffer(CellStartBuffer)]],
+    device const uint   *cellEnd              [[buffer(CellEndBuffer)]],
+    device const uint   *sortedParticleIds    [[buffer(ParticleIdsBuffer)]],
 
-    thread float2 externalForce = M * gravityK * g;
-    thread float2 pressureForce = float2(0, 0);
-    thread float2 viscosityForce = float2(0, 0);
+    // Mapping constants
+    constant uint2      &gridRes              [[buffer(GridResBuffer)]],
+    constant float2     &origin               [[buffer(OriginBuffer)]],
+    constant float      &invCell              [[buffer(InvCellBuffer)]],
+    constant uint       &numParticles         [[buffer(NumParticlesBuffer)]],
 
-    // Compute grid index of the current particle
-    uint x = uint((position.x + 0.5f) / cellSize);
-    uint y = uint((position.y + 0.5f) / cellSize);
-    uint2 gridIndex = uint2(x, y);
+    uint id [[thread_position_in_grid]]
+){
+    if (id >= numParticles) return;
 
-    // Loop over neighboring cells
-    for (int dy = -1; dy <= 1; dy++) {
-        for (int dx = -1; dx <= 1; dx++) {
-            int2 neighborGrid = int2(gridIndex) + int2(dx, dy);
+    // Particle state
+    float  mass     = volume * restDensity / float(numParticles);
+    float2 position = positions[id];
+    float2 velocity = velocities[id];
+    float  pressure = pressures[id];
+    float  density  = densities[id];
 
-            // Check grid bounds
-            if (neighborGrid.x < 0 || neighborGrid.x >= int(gridDims.x) ||
-                neighborGrid.y < 0 || neighborGrid.y >= int(gridDims.y)) {
-                continue;
-            }
+    // Forces
+    float2 externalForce  = mass * gravityK * g;
+    float2 pressureForce  = float2(0.0f, 0.0f);
+    float2 viscosityForce = float2(0.0f, 0.0f);
 
-            uint2 neighborGridU = uint2(neighborGrid.x, neighborGrid.y);
-            uint neighborHash = computeHash(neighborGridU);
+    // Cell of this particle
+    float2 positionInCellSpace = (position - origin) * invCell;
+    int2   cellIndex = int2(floor(positionInCellSpace));
+    cellIndex.x = clamp(cellIndex.x, 0, int(gridRes.x) - 1);
+    cellIndex.y = clamp(cellIndex.y, 0, int(gridRes.y) - 1);
 
-            uint count = gridCounts[neighborHash];
+    // Clamp neighbor bounds
+    int x0 = max(0,                cellIndex.x - 1);
+    int x1 = min(int(gridRes.x)-1, cellIndex.x + 1);
+    int y0 = max(0,                cellIndex.y - 1);
+    int y1 = min(int(gridRes.y)-1, cellIndex.y + 1);
 
-            // Loop over particles in the neighbor cell
-            for (uint i = 0; i < count; i++) {
-                uint neighborId = gridParticleIndices[neighborHash * maxParticlesPerCell + i];
+    // Visit 3×3 neighbor cells
+    for (int ny = y0; ny <= y1; ++ny) {
+        for (int nx = x0; nx <= x1; ++nx) {
+            uint neighborCellLinearIndex = uint(ny) * gridRes.x + uint(nx);
+            uint rangeStart = cellStart[neighborCellLinearIndex];
+            uint rangeEnd   = cellEnd[neighborCellLinearIndex];
 
-                if (neighborId == id) {
-                    continue; // Skip self
-                }
+            for (uint k = rangeStart; k < rangeEnd; ++k) {
+                uint   neighborId       = sortedParticleIds[k];
+                if (neighborId == id) continue;
 
                 float2 neighborPosition = positions[neighborId];
                 float2 neighborVelocity = velocities[neighborId];
-                float neighborPressure = pressures[neighborId];
-                float neighborDensity = densities[neighborId];
+                float  neighborPressure = pressures[neighborId];
+                float  neighborDensity  = densities[neighborId];
 
                 float2 vector = position - neighborPosition;
-                float radius = length(vector);
+                float  radius2     = dot(vector, vector);
+                float radius = sqrt(radius2);
 
-                if (radius < h && radius > 0.0f) {
-                    // Pressure force
-                    float2 gradW = PressureGradientKernel(vector, radius);
-                    float pressureTerm = M * (pressure + neighborPressure) / (2.0f * neighborDensity * density);
-                    pressureForce -= pressureTerm * gradW;
-                    
-                    // Near Pressure force
-                    gradW = NearPressureGradientKernel(vector, radius);
-                    pressureTerm = M * nearStiffness * density;
-                    pressureForce -= pressureTerm * gradW;
+                // Pressure force (Spiky gradient)
+                float2 gradW = PressureGradientKernel(vector, radius);
+                float  pressureTerm = mass * (pressure + neighborPressure) / (2.0f * neighborDensity * density);
+                pressureForce -= pressureTerm * gradW;
 
-                    // Viscosity force
-                    float laplacianW = ViscosityLaplacianKernel(radius);
-                    viscosityForce += M * viscosityCoefficient * (neighborVelocity - velocity) * laplacianW / neighborDensity;
-                }
+                // Near-pressure
+                float2 gradNear = NearPressureGradientKernel(vector, radius);
+                float  nearTerm = mass * nearStiffness * density;
+                pressureForce -= nearTerm * gradNear;
+
+                // Viscosity
+                float laplacianW = ViscosityLaplacianKernel(radius);
+                viscosityForce += mass * viscosityCoefficient * (neighborVelocity - velocity) * (laplacianW / neighborDensity);
             }
         }
     }
 
-    // Store the total force
     forces[id] = pressureForce + viscosityForce + externalForce;
 }

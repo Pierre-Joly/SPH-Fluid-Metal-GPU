@@ -1,10 +1,3 @@
-//
-//  App.swift
-//  SPH
-//
-//  Created by Pierre joly on 26/08/2024.
-//
-
 import SwiftUI
 
 @main

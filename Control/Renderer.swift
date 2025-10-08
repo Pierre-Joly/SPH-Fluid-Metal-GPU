@@ -1,10 +1,3 @@
-//
-//  Renderer.swift
-//  SPH
-//
-//  Created by Pierre joly on 26/08/2024.
-//
-
 import MetalKit
 
 class Renderer: NSObject {
@@ -13,7 +6,7 @@ class Renderer: NSObject {
     static var library: MTLLibrary!
 
     var camera = OrthographicCamera()
-    let particleNumber: Int = 8192
+    let particleNumber: Int = 16384
     
     var physicRenderPass: PhysicRenderPass
     var graphicRenderPass: GraphicRenderPass

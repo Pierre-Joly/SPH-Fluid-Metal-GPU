@@ -4,18 +4,23 @@
 #include <metal_stdlib>
 using namespace metal;
 
+#include "Common.h"
+
 // Physics constants
 constant const float mass = 1.0f;
 constant const float PI = 3.1415927f;
 constant const float volume = 0.5f;
-constant const float h = 0.05f;  // Kernel Radius
+constant const float h = PARTICLE_SIZE * 10;  // Kernel Radius
 constant const float restDensity = 1000.0f;
 constant const float stiffness = 1e5f;
-constant const float dt = 1e-5f;
+constant const float dt = 5e-5f;
 constant const float2 g = float2(0.0f, -9.81f);
 constant const float gravityK = 1e5f;
 constant const float viscosityCoefficient = 1.0f;
 constant const float nearStiffness = 1e-5 * stiffness;
+
+// Numerical stability constant
+constant float eps = 1e-8f;
 
 // Precomputed constants
 constant float h2 = h * h;
@@ -27,23 +32,24 @@ constant float h8 = h5 * h3;
 // Viscosity Laplacian Kernel - Laplacian of
 inline float ViscosityLaplacianKernel(float r)
 {
-    return (20.0f / (PI * h5)) * (h - r);
+    float h_minus_r = max(h - r, 0.0f);
+    return (20.0f / (PI * h5)) * h_minus_r;
 }
 
 // Pressure Gradient Kernel - Gradient of Spiky kernel 2D
 inline float2 PressureGradientKernel(float2 vec, float r)
 {
-    float h_minus_dist = h - r;
-    float coeff = (30.0f / (PI * h5)) * h_minus_dist * h_minus_dist;
-    return -coeff * vec / r;
+    float h_minus_r = max(h - r, 0.0f);
+    float coeff = (30.0f / (PI * h5)) * h_minus_r * h_minus_r;
+    return -coeff * vec / (r + eps);
 }
 
 // Near-Pressure Gradient Kernel
 inline float2 NearPressureGradientKernel(float2 vec, float r)
 {
-    float h_minus_dist = h - r;
-    float coeff = (10.0f / (PI * h5)) * h_minus_dist * h_minus_dist * h_minus_dist;
-    return -coeff * vec / r;
+    float h_minus_r = max(h - r, 0.0f);
+    float coeff = (10.0f / (PI * h5)) * h_minus_r * h_minus_r * h_minus_r;
+    return -coeff * vec / (r + eps);
 }
 
 // Density Kernel - Polynomial kernel 2D
