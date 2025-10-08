@@ -9,7 +9,7 @@ using namespace metal;
 // Physics constants
 constant const float mass = 1.0f;
 constant const float PI = 3.1415927f;
-constant const float volume = 0.5f;
+constant const float volume = PARTICLE_SIZE * 100;
 constant const float h = PARTICLE_SIZE * 10;  // Kernel Radius
 constant const float restDensity = 1000.0f;
 constant const float stiffness = 1e5f;

@@ -3,39 +3,32 @@ using namespace metal;
 
 #include "Common.h"
 
-constant float box = 0.5f;
+constant float box     = 0.5f;
 constant float damping = 0.7f;
-constant float dist = box;
 
 kernel void collision(device float2 *velocities [[buffer(VelocityBuffer)]],
-                      device float2 *positions [[buffer(PositionBuffer)]],
+                      device float2 *positions  [[buffer(PositionBuffer)]],
                       constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
                       uint id [[thread_position_in_grid]])
 {
-    if (id >= numParticles) {
-        return;
-    }
-    
-    thread float2 myPosition = positions[id];
-    thread float2 myVelocity = velocities[id];
+    if (id >= numParticles) return;
 
-    // Check collision with box boundaries and apply damping
-    if (myPosition.x > dist) {
-        myPosition.x = dist;
-        myVelocity.x *= -damping;
-    } else if (myPosition.x < -dist) {
-        myPosition.x = -dist;
-        myVelocity.x *= -damping;
-    }
-    if (myPosition.y > dist) {
-        myPosition.y = dist;
-        myVelocity.y *= -damping;
-    } else if (myPosition.y < -dist) {
-        myPosition.y = -dist;
-        myVelocity.y *= -damping;
-    }
-    
-    // Update positions and velocities
-    positions[id] = myPosition;
-    velocities[id] = myVelocity;
+    float2 position = positions[id];
+    float2 velocity = velocities[id];
+
+    // Per-axis hit masks (0 or 1)
+    float2 hitHi = step(float2(box), position);
+    float2 hitLo = step(position, -float2(box));
+    float2 hit   = clamp(hitHi + hitLo, 0.0f, 1.0f);
+
+    // Clamp position into the box
+    float2 positionClamped = clamp(position, -float2(box), float2(box));
+
+    // Reflect & damp only collided component
+    float2 velocityReflected = -velocity * damping;
+    float2 velocityOut = velocity * (1.0f - hit) + velocityReflected * hit;
+
+    positions[id]  = positionClamped;
+    velocities[id] = velocityOut;
 }
+
