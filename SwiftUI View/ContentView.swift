@@ -1,27 +1,94 @@
-//
-//  ContentView.swift
-//  SPH
-//
-//  Created by Pierre joly on 26/08/2024.
-//
-
 import SwiftUI
 
-let size: CGFloat = 700
-
 struct ContentView: View {
-    @State private var showGrid = true
-    @State private var particleSize: Float = 0.05 // Initial value for particle size
-    @State private var restDensity: Float = 100.0 // Initial value for restDensity
-    @State private var stiffness: Float = 1.0 // Initial value for stiffness
+    @State private var particleSize: Float = 0.005
+    @State private var restDensity: Float = 1000.0
+    @State private var stiffness: Float = 1e5
+    @State private var viscosity: Float = 1e-3
+    @State private var particleCount: Int = 16_384
+    @State private var isRunning: Bool = true
+    @State private var restartToken: Int = 0
+    @State private var integrationMethod: IntegrationMethod = .rk4
+    @State private var dtValue: Float = 5e-5
+    @State private var substeps: Int = 1
+    @State private var renderMode: RenderMode = .particles
+    @State private var gridResolution: Int = 256
 
     var body: some View {
-        VStack {
-            MetalView(particleSize: $particleSize, restDensity: $restDensity, stiffness: $stiffness)
-                .border(Color.white, width: 20)
+        GeometryReader { proxy in
+            let isCompact = proxy.size.width < 980
+            ZStack {
+                BackgroundView()
+                Group {
+                    if isCompact {
+                        VStack(spacing: 20) {
+                            ControlPanel(
+                                particleSize: $particleSize,
+                                restDensity: $restDensity,
+                                stiffness: $stiffness,
+                                viscosity: $viscosity,
+                                particleCount: $particleCount,
+                                isRunning: $isRunning,
+                                restartToken: $restartToken,
+                                integrationMethod: $integrationMethod,
+                                renderMode: $renderMode,
+                                dtValue: $dtValue,
+                                substeps: $substeps,
+                                gridResolution: $gridResolution
+                            )
+                            SimulationSurface(
+                                containerSize: proxy.size,
+                                particleSize: $particleSize,
+                                restDensity: $restDensity,
+                                stiffness: $stiffness,
+                                particleCount: $particleCount,
+                                isRunning: $isRunning,
+                                restartToken: $restartToken,
+                                integrationMethod: $integrationMethod,
+                                dtValue: $dtValue,
+                                substeps: $substeps,
+                                viscosity: $viscosity,
+                                renderMode: $renderMode,
+                                gridResolution: $gridResolution
+                            )
+                        }
+                    } else {
+                        HStack(spacing: 24) {
+                            ControlPanel(
+                                particleSize: $particleSize,
+                                restDensity: $restDensity,
+                                stiffness: $stiffness,
+                                viscosity: $viscosity,
+                                particleCount: $particleCount,
+                                isRunning: $isRunning,
+                                restartToken: $restartToken,
+                                integrationMethod: $integrationMethod,
+                                renderMode: $renderMode,
+                                dtValue: $dtValue,
+                                substeps: $substeps,
+                                gridResolution: $gridResolution
+                            )
+                            SimulationSurface(
+                                containerSize: proxy.size,
+                                particleSize: $particleSize,
+                                restDensity: $restDensity,
+                                stiffness: $stiffness,
+                                particleCount: $particleCount,
+                                isRunning: $isRunning,
+                                restartToken: $restartToken,
+                                integrationMethod: $integrationMethod,
+                                dtValue: $dtValue,
+                                substeps: $substeps,
+                                viscosity: $viscosity,
+                                renderMode: $renderMode,
+                                gridResolution: $gridResolution
+                            )
+                        }
+                    }
+                }
+                .padding(28)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: size, height: size)
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

@@ -31,4 +31,3 @@ kernel void collision(device float2 *velocities [[buffer(VelocityBuffer)]],
     positions[id]  = positionClamped;
     velocities[id] = velocityOut;
 }
-

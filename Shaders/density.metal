@@ -11,17 +11,21 @@ kernel void density(
     // Output
     device float        *densities           [[buffer(DensityBuffer)]],
     device float        *pressures           [[buffer(PressureBuffer)]],
-                    
+
     // Range-based neighbor data
     device const uint   *cellStart           [[buffer(CellStartBuffer)]],
     device const uint   *cellEnd             [[buffer(CellEndBuffer)]],
     device const uint   *sortedParticleIds   [[buffer(ParticleIdsBuffer)]],
+    device const float2 *sortedPositions     [[buffer(SortedPositionBuffer)]],
                     
     // Mapping constants
     constant uint2      &gridRes             [[buffer(GridResBuffer)]],
     constant float2     &origin              [[buffer(OriginBuffer)]],
     constant float      &invCell             [[buffer(InvCellBuffer)]],
     constant uint       &numParticles        [[buffer(NumParticlesBuffer)]],
+    constant float      &particleSize        [[buffer(ParticleSizeBuffer)]],
+    constant float      &stiffnessValue      [[buffer(StiffnessBuffer)]],
+    constant float      &restDensityValue    [[buffer(RestDensityBuffer)]],
 
     uint id [[thread_position_in_grid]]
 ){
@@ -29,7 +33,13 @@ kernel void density(
     
     // Particle state
     float2 position = positions[id];
-    float  mass = volume * restDensity / float(numParticles);
+    float h = particleSize * 4.0f;
+    float h2 = h * h;
+    float h3 = h2 * h;
+    float h5 = h2 * h3;
+    float h8 = h5 * h3;
+    float volume = 1.0f;
+    float mass = volume * restDensityValue / numParticles;
 
     // Clamp neighbor bounds
     float2 positionInCellSpace = (position - origin) * invCell;
@@ -53,17 +63,16 @@ kernel void density(
             uint rangeEnd   = cellEnd[neighborCellLinearIndex];
 
             for (uint k = rangeStart; k < rangeEnd; ++k) {
-                uint neighborId = sortedParticleIds[k];
-                
-                float2 neighborPos = positions[neighborId];
+                float2 neighborPos = sortedPositions[k];
                 float2 vector = position - neighborPos;
-                float radius = length(vector);
+                float r2 = dot(vector, vector);
+                if (r2 >= h2) continue;
 
-                density += mass * DensityKernel(radius);
+                density += mass * DensityKernelR2(r2, h2, h8);
             }
         }
     }
 
     densities[id] = density;
-    pressures[id] = stiffness * (density - restDensity);
+    pressures[id] = stiffnessValue * (density - restDensityValue);
 }

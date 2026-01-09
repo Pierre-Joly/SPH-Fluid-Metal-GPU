@@ -18,26 +18,40 @@ kernel void force(
     device const uint   *cellStart            [[buffer(CellStartBuffer)]],
     device const uint   *cellEnd              [[buffer(CellEndBuffer)]],
     device const uint   *sortedParticleIds    [[buffer(ParticleIdsBuffer)]],
+    device const float2 *sortedPositions      [[buffer(SortedPositionBuffer)]],
+    device const float2 *sortedVelocities     [[buffer(SortedVelocityBuffer)]],
+    device const float  *sortedDensities      [[buffer(SortedDensityBuffer)]],
+    device const float  *sortedPressures      [[buffer(SortedPressureBuffer)]],
 
     // Mapping constants
     constant uint2      &gridRes              [[buffer(GridResBuffer)]],
     constant float2     &origin               [[buffer(OriginBuffer)]],
     constant float      &invCell              [[buffer(InvCellBuffer)]],
     constant uint       &numParticles         [[buffer(NumParticlesBuffer)]],
+    constant float      &particleSize         [[buffer(ParticleSizeBuffer)]],
+    constant float      &stiffnessValue       [[buffer(StiffnessBuffer)]],
+    constant float      &restDensityValue     [[buffer(RestDensityBuffer)]],
+    constant float      &viscosityValue       [[buffer(ViscosityBuffer)]],
 
     uint id [[thread_position_in_grid]]
 ){
     if (id >= numParticles) return;
 
     // Particle state
-    float  mass     = volume * restDensity / float(numParticles);
+    float h = particleSize * 4.0f;
+    float h2 = h * h;
+    float h3 = h2 * h;
+    float h5 = h2 * h3;
+    float volume = 1.0f;
+    float mass = volume * restDensityValue / numParticles;
+    float nearStiffness = 1e-5f * stiffnessValue;
     float2 position = positions[id];
     float2 velocity = velocities[id];
     float  pressure = pressures[id];
     float  density  = densities[id];
 
     // Forces
-    float2 externalForce  = mass * gravityK * g;
+    float2 externalForce  = density * g;
     float2 pressureForce  = float2(0.0f, 0.0f);
     float2 viscosityForce = float2(0.0f, 0.0f);
 
@@ -64,28 +78,29 @@ kernel void force(
                 uint   neighborId       = sortedParticleIds[k];
                 if (neighborId == id) continue;
 
-                float2 neighborPosition = positions[neighborId];
-                float2 neighborVelocity = velocities[neighborId];
-                float  neighborPressure = pressures[neighborId];
-                float  neighborDensity  = densities[neighborId];
+                float2 neighborPosition = sortedPositions[k];
+                float2 neighborVelocity = sortedVelocities[k];
+                float  neighborPressure = sortedPressures[k];
+                float  neighborDensity  = sortedDensities[k];
 
                 float2 vector = position - neighborPosition;
-                float  radius2     = dot(vector, vector);
+                float radius2 = dot(vector, vector);
+                if (radius2 >= h2) continue;
                 float radius = sqrt(radius2);
 
                 // Pressure force (Spiky gradient)
-                float2 gradW = PressureGradientKernel(vector, radius);
+                float2 gradW = PressureGradientKernel(vector, radius, h, h5);
                 float  pressureTerm = mass * (pressure + neighborPressure) / (2.0f * neighborDensity * density);
                 pressureForce -= pressureTerm * gradW;
 
                 // Near-pressure
-                float2 gradNear = NearPressureGradientKernel(vector, radius);
+                float2 gradNear = NearPressureGradientKernel(vector, radius, h, h5);
                 float  nearTerm = mass * nearStiffness * density;
                 pressureForce -= nearTerm * gradNear;
 
                 // Viscosity
-                float laplacianW = ViscosityLaplacianKernel(radius);
-                viscosityForce += mass * viscosityCoefficient * (neighborVelocity - velocity) * (laplacianW / neighborDensity);
+                float laplacianW = ViscosityLaplacianKernel(radius, h, h5);
+                viscosityForce += mass * viscosityValue * (neighborVelocity - velocity) * (laplacianW / neighborDensity);
             }
         }
     }

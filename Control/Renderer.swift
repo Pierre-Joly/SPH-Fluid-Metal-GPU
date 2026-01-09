@@ -1,18 +1,57 @@
 import MetalKit
 
+enum IntegrationMethod: String, CaseIterable, Identifiable {
+    case rk4 = "RK4"
+    case rk2 = "RK2"
+    case predictorCorrector = "PC"
+    case verlet = "Verlet"
+
+    var id: String { rawValue }
+    var label: String { rawValue }
+}
+
+enum RenderMode: String, CaseIterable, Identifiable {
+    case particles = "Particles"
+    case density = "Density"
+    case velocity = "Velocity"
+
+    var id: String { rawValue }
+    var label: String { rawValue }
+}
+
 class Renderer: NSObject {
     static var device: MTLDevice!
     static var commandQueue: MTLCommandQueue!
     static var library: MTLLibrary!
 
     var camera = OrthographicCamera()
-    let particleNumber: Int = 30000
+    let particleNumber: Int
+    var isPaused: Bool = false
     
     var physicRenderPass: PhysicRenderPass
     var graphicRenderPass: GraphicRenderPass
     var quadModel: QuadModel
+    var particleSize: Float
+    var stiffness: Float
+    var restDensity: Float
+    var viscosity: Float
+    var integrationMethod: IntegrationMethod
+    var dtValue: Float
+    var substeps: Int
+    var renderMode: RenderMode
+    var gridResolution: Int
     
-    init(metalView: MTKView) {
+    init(metalView: MTKView, particleNumber: Int, particleSize: Float, stiffness: Float, restDensity: Float, viscosity: Float, integrationMethod: IntegrationMethod, dtValue: Float, substeps: Int, renderMode: RenderMode, gridResolution: Int) {
+        self.particleNumber = particleNumber
+        self.particleSize = particleSize
+        self.stiffness = stiffness
+        self.restDensity = restDensity
+        self.viscosity = viscosity
+        self.integrationMethod = integrationMethod
+        self.dtValue = dtValue
+        self.substeps = substeps
+        self.renderMode = renderMode
+        self.gridResolution = gridResolution
         // Create the device and command queue
         guard
             let device = MTLCreateSystemDefaultDevice(),
@@ -34,13 +73,23 @@ class Renderer: NSObject {
         self.physicRenderPass = PhysicRenderPass(device: Self.device,
                                                  commandQueue: Self.commandQueue,
                                                  particleNumber: self.particleNumber,
-                                                 camera: self.camera)
+                                                 camera: self.camera,
+                                                 particleSize: particleSize,
+                                                 stiffness: stiffness,
+                                                 restDensity: restDensity,
+                                                 viscosity: viscosity,
+                                                 integrationMethod: integrationMethod,
+                                                 dtValue: dtValue,
+                                                 substeps: substeps)
         
         self.graphicRenderPass = GraphicRenderPass(view: metalView,
                                                    device: device,
                                                    physicPass: self.physicRenderPass,
                                                    quad: quadModel,
-                                                   camera: self.camera)
+                                                   camera: self.camera,
+                                                   particleSize: particleSize,
+                                                   renderMode: renderMode,
+                                                   gridResolution: gridResolution)
 
         super.init()
         
@@ -73,7 +122,9 @@ extension Renderer: MTKViewDelegate {
             else { return }
         
         // Physic computation
-        physicRenderPass.draw(commandBuffer: commandBuffer)
+        if !isPaused {
+            physicRenderPass.draw(commandBuffer: commandBuffer)
+        }
         
         // Graphic rendering
         graphicRenderPass.descriptor = descriptor
@@ -85,5 +136,61 @@ extension Renderer: MTKViewDelegate {
         
         commandBuffer.present(drawable)
         commandBuffer.commit()
+    }
+}
+
+extension Renderer {
+    func resetSimulation() {
+        physicRenderPass.initializePositions(
+            device: Self.device,
+            commandQueue: Self.commandQueue,
+            camera: camera
+        )
+    }
+
+    func updateRestDensity(_ value: Float) {
+        restDensity = value
+        physicRenderPass.updateRestDensity(value)
+    }
+
+    func updateViscosity(_ value: Float) {
+        viscosity = value
+        physicRenderPass.updateViscosity(value)
+    }
+
+    func updateStiffness(_ value: Float) {
+        stiffness = value
+        physicRenderPass.updateStiffness(value)
+    }
+
+    func updateParticleSize(_ value: Float) {
+        particleSize = value
+        physicRenderPass.updateParticleSize(value)
+        graphicRenderPass.updateParticleSize(value)
+    }
+
+    func updateIntegrationMethod(_ value: IntegrationMethod) {
+        integrationMethod = value
+        physicRenderPass.updateIntegrationMethod(value)
+    }
+
+    func updateDT(_ value: Float) {
+        dtValue = value
+        physicRenderPass.updateDT(value)
+    }
+
+    func updateSubsteps(_ value: Int) {
+        substeps = value
+        physicRenderPass.updateSubsteps(value)
+    }
+
+    func updateRenderMode(_ value: RenderMode) {
+        renderMode = value
+        graphicRenderPass.updateRenderMode(value)
+    }
+
+    func updateGridResolution(_ value: Int) {
+        gridResolution = value
+        graphicRenderPass.updateDensityGridResolution(value)
     }
 }

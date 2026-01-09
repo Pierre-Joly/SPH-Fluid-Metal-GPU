@@ -1,8 +1,6 @@
 # SPH Fluid Simulation in Metal
 
-This repository contains an **educational** Smooth Particle Hydrodynamics (SPH) fluid simulation project written in **Metal**, Apple’s GPU programming framework. The objective is to demonstrate the fundamentals of SPH and provide a starting point for anyone looking to learn or experiment with GPU-accelerated particle-based fluid simulations on Apple platforms.
-
-Fast simulation of up to 16,384 (2^14) particles using GPU acceleration.
+This repository contains an **educational** Smooth Particle Hydrodynamics (SPH) fluid simulation written in **Metal** and wrapped in a **SwiftUI** app. It demonstrates a real-time 2D SPH solver with GPU compute, a modern control panel, and multiple visualization modes.
 
 ## Table of Contents
 - [SPH Fluid Simulation in Metal](#sph-fluid-simulation-in-metal)
@@ -13,11 +11,10 @@ Fast simulation of up to 16,384 (2^14) particles using GPU acceleration.
     - [Why Metal?](#why-metal)
   - [Features](#features)
   - [Requirements](#requirements)
-  - [Installation and Setup](#installation-and-setup)
+  - [Build and Run](#build-and-run)
   - [Usage](#usage)
-  - [TODO](#todo)
   - [Project Structure](#project-structure)
-  - [Contributing](#contributing)
+  - [TODO](#todo)
   - [License](#license)
   - [References](#references)
 
@@ -33,10 +30,8 @@ This project leverages **Metal** to perform computations directly on Apple GPUs,
 
 ## Screenshots
 
-<div align="center">
-  <img src="image/simulation_calm.png" alt="SPH Demo Calm" width="45%">
-  <img src="image/simulation_drop.png" alt="SPH Demo Drop" width="45%">
-</div>
+![Simulation particle mode](image/particle.jpeg)
+![Simulation density mode](image/density.jpeg)
 
 ### Why Metal?
 
@@ -49,95 +44,66 @@ This project leverages **Metal** to perform computations directly on Apple GPUs,
 
 ## Features
 
-- **Particle-based fluid simulation** using SPH.
-- **GPU-accelerated** calculations for neighbor searches, particle interactions, and rendering.
-- **Real-time visualization** of fluid behavior.
+- **GPU-based SPH solver** with per-frame compute pipelines for density, forces, and integration.
+- **Spatial hashing with Morton codes + radix sort** to build cell ranges for neighbor search.
+- **Multiple integrators**: RK4, RK2, predictor-corrector, and Verlet.
+- **Render modes**: particle sprites, density field, and velocity field.
+- **SwiftUI control panel** for particle count, timestep, viscosity, stiffness, and more.
 
 ---
 
 ## Requirements
 
-- **macOS 11 (Big Sur)** or later, or **iOS 14** or later (for iOS build).
-- **Xcode 13** or later (recommended).
-- A device that supports **Metal** (macOS, iPhone, or iPad).
+- **macOS** with a Metal-capable GPU.
+- **Xcode** with SwiftUI + Metal support (Xcode 14+ recommended).
 
 ---
 
-## Installation and Setup
+## Build and Run
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Pierre-Joly/SPH-Fluid-Metal-GPU.git
-   cd SPH-Fluid-Metal-GPU
-   ```
-
-2. **Open the project in Xcode**:
-   - Double-click `SPH-Fluid-Metal-GPU.xcodeproj` (or `SPH-Fluid-Metal-GPU.xcworkspace` if provided).
-   
-3. **Select your target**:
-   - For macOS, choose the **MyMac** scheme (or a similar Mac scheme in Xcode).
-   - For iOS, select an **iOS device** or **Simulator** scheme.
-   
-4. **Build and run**:
-   - Press **Cmd + R** in Xcode to build and run the application.
+1. Open the repository in Xcode.
+2. Select the macOS target.
+3. Press **Cmd + R** to build and run.
 
 ---
 
 ## Usage
 
-1. **Run the app** in Xcode. You will see a window (or iOS simulator) displaying the fluid particles moving according to SPH rules.
-2. **Adjust parameters** (like particle count, smoothing radius, etc.) inside the code or configuration files if needed. You can experiment with different values to observe changes in fluid behavior.
-3. **Interact** with the simulation:
-   - On macOS, you may be able to rotate, pan, or zoom the view (depending on the current implementation).
-   - On iOS, use touch gestures to interact with the simulation if implemented.
-
----
-
-## TODO
-- [ ] Transition from a **grid-based neighbor search** to a **hash-based neighbor search** using Morton codes.  
-  *Implementing Radix Sort or Bitonic Sort will be required for this step.*
-- [ ] Extend the simulation from **2D** to **3D**.
-- [ ] Add **multi-platform support for iOS**.
-- [ ] Add a UI to allow easy customization of parameters.
+1. Run the app in Xcode. You will see the simulation surface and a control panel.
+2. Use the controls to tweak particle count (1,024 to 500,000), timestep, substeps, integration method, and render mode.
+3. If you change particle count or particle radius, the simulation rebuilds buffers and restarts.
 
 ---
 
 ## Project Structure
 
-A typical structure for this repository might look like:
-
 ```
-SPH-Fluid-Metal-GPU
-├── SPH-Fluid-Metal-GPU
-│   ├── AppDelegate.swift        // App delegate for macOS/iOS
-│   ├── ViewController.swift     // Handles the main view and rendering
-│   ├── MetalView.swift          // Custom Metal view for rendering
-│   ├── SPHRenderer.swift        // Responsible for setting up Metal pipelines
-│   ├── SPHSimulation.swift      // Core SPH logic
-│   ├── Shaders.metal            // Metal shader functions (kernels)
-│   └── ...                      // Additional source files
-├── Images.xcassets              // Assets for icons, etc.
-├── SPH-Fluid-Metal-GPU.xcodeproj
-├── LICENSE                      // License information
-└── README.md                    // Project documentation
+SPH
+├── SPHApp.swift                     // SwiftUI app entry point
+├── SwiftUI View/                    // UI and MTKView bridge
+│   ├── ContentView.swift
+│   ├── ControlPanel.swift
+│   ├── SimulationSurface.swift
+│   └── MetalView.swift
+├── Control/                         // Renderer + camera
+│   ├── Renderer.swift
+│   └── Camera.swift
+├── Render/                          // Render passes and pipelines
+│   ├── PhysicRenderPass.swift
+│   ├── PhysicRenderPass+RK4.swift
+│   ├── PhysicRenderPass+RK2.swift
+│   ├── PhysicRenderPass+Verlet.swift
+│   └── GraphicRenderPass.swift
+├── Shaders/                         // Metal compute + render kernels
+├── Geometry/                        // Quad model + transforms
+└── Utility/                         // Math helpers
 ```
 
-- **SPH-Fluid-Metal-GPU**: Contains the main source code and resources.
-- **Shaders.metal**: GPU kernels responsible for SPH computations and rendering.
-- **SPHSimulation.swift**: Core SPH algorithms, calculations, and data structures.
-- **SPHRenderer.swift**: Responsible for rendering code, pipeline setup, and draw calls.
-
----
-
-## Contributing
-
-Contributions are welcome! If you would like to contribute to this project:
-1. **Fork** the repository.
-2. **Create a new branch** for your feature or bug fix.
-3. **Commit your changes** with clear messages.
-4. **Open a pull request** describing the changes you made.
-
-Please adhere to the existing style conventions and add relevant documentation where needed.
+## TODO
+- [ ] Extend the simulation from **2D** to **3D**.
+- [ ] Add **multi-platform support for iOS**.
+- [ ] Add boundary shapes and emitters.
+- [ ] Improve stability for extreme particle counts and timesteps.
 
 ---
 

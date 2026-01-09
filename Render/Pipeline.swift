@@ -59,4 +59,33 @@ enum PipelineStates {
         let pso = createPSO(descriptor: pipelineDescriptor)
         return (pso, vertexFunction)
     }
+
+    static func createDensityPSO(colorPixelFormat: MTLPixelFormat) -> MTLRenderPipelineState {
+        guard let vertexFunction = Renderer.library.makeFunction(name: "density_vertex"),
+              let fragmentFunction = Renderer.library.makeFunction(name: "density_fragment") else {
+            fatalError("Failed to load density shader functions")
+        }
+
+        guard let vertexDescriptor = MTLVertexDescriptor.defaultLayout else {
+            fatalError("Failed to create vertex descriptor")
+        }
+
+        let pipelineDescriptor = MTLRenderPipelineDescriptor()
+        pipelineDescriptor.vertexFunction = vertexFunction
+        pipelineDescriptor.fragmentFunction = fragmentFunction
+        pipelineDescriptor.vertexDescriptor = vertexDescriptor
+        pipelineDescriptor.colorAttachments[0].pixelFormat = colorPixelFormat
+
+        if let attachment = pipelineDescriptor.colorAttachments[0] {
+            attachment.isBlendingEnabled = true
+            attachment.rgbBlendOperation = .add
+            attachment.alphaBlendOperation = .add
+            attachment.sourceRGBBlendFactor = .sourceAlpha
+            attachment.sourceAlphaBlendFactor = .sourceAlpha
+            attachment.destinationRGBBlendFactor = .oneMinusSourceAlpha
+            attachment.destinationAlphaBlendFactor = .oneMinusSourceAlpha
+        }
+
+        return createPSO(descriptor: pipelineDescriptor)
+    }
 }
