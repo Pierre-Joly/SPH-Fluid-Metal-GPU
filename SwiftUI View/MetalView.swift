@@ -14,6 +14,7 @@ struct MetalView: View {
     @Binding var dtValue: Float
     @Binding var substeps: Int
     @Binding var viscosity: Float
+    @Binding var gravityMultiplier: Float
     @Binding var renderMode: RenderMode
     @Binding var gridResolution: Int
 
@@ -27,6 +28,7 @@ struct MetalView: View {
                     stiffness: stiffness,
                     restDensity: restDensity,
                     viscosity: viscosity,
+                    gravityMultiplier: gravityMultiplier,
                     integrationMethod: integrationMethod,
                     dtValue: dtValue,
                     substeps: substeps,
@@ -44,6 +46,7 @@ struct MetalView: View {
                     stiffness: stiffness,
                     restDensity: restDensity,
                     viscosity: viscosity,
+                    gravityMultiplier: gravityMultiplier,
                     integrationMethod: integrationMethod,
                     dtValue: dtValue,
                     substeps: substeps,
@@ -63,6 +66,9 @@ struct MetalView: View {
             }
             .onChange(of: viscosity) { _, newValue in
                 renderer?.updateViscosity(newValue)
+            }
+            .onChange(of: gravityMultiplier) { _, newValue in
+                renderer?.updateGravityMultiplier(newValue)
             }
             .onChange(of: isRunning) { _, newValue in
                 renderer?.isPaused = !newValue

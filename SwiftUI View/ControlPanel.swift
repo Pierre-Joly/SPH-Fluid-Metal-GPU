@@ -5,6 +5,7 @@ struct ControlPanel: View {
     @Binding var restDensity: Float
     @Binding var stiffness: Float
     @Binding var viscosity: Float
+    @Binding var gravityMultiplier: Float
     @Binding var particleCount: Int
     @Binding var isRunning: Bool
     @Binding var restartToken: Int
@@ -107,6 +108,13 @@ struct ControlPanel: View {
                         value: $viscosity,
                         range: 1e-6...1e-1,
                         format: .number.precision(.fractionLength(6))
+                    )
+
+                    ControlSlider(
+                        title: "Gravity Multiplier",
+                        value: $gravityMultiplier,
+                        range: -100.0...100.0,
+                        format: .number.precision(.fractionLength(2))
                     )
 
                     VStack(alignment: .leading, spacing: 10) {

@@ -69,6 +69,7 @@ class PhysicRenderPass {
     var stiffness: Float
     var restDensity: Float
     var viscosity: Float
+    var gravityMultiplier: Float
     var integrationMethod: IntegrationMethod
     var dtValue: Float
     var substeps: Int
@@ -86,7 +87,7 @@ class PhysicRenderPass {
     var scanBlockCount: Int
     var mortonBitCount: Int
     
-    init(device: MTLDevice, commandQueue: MTLCommandQueue, particleNumber: Int, camera: OrthographicCamera, particleSize: Float, stiffness: Float, restDensity: Float, viscosity: Float, integrationMethod: IntegrationMethod, dtValue: Float, substeps: Int) {
+    init(device: MTLDevice, commandQueue: MTLCommandQueue, particleNumber: Int, camera: OrthographicCamera, particleSize: Float, stiffness: Float, restDensity: Float, viscosity: Float, gravityMultiplier: Float, integrationMethod: IntegrationMethod, dtValue: Float, substeps: Int) {
         
         // Constants
         self.particleNumber = particleNumber
@@ -94,6 +95,7 @@ class PhysicRenderPass {
         self.stiffness = stiffness
         self.restDensity = restDensity
         self.viscosity = viscosity
+        self.gravityMultiplier = gravityMultiplier
         self.integrationMethod = integrationMethod
         self.dtValue = dtValue
         self.substeps = max(1, substeps)
@@ -413,8 +415,7 @@ class PhysicRenderPass {
         guard let encoder = commandBuffer.makeComputeCommandEncoder() else {
             fatalError("Failed to create compute command buffer")
         }
-        let particleNumber = self.particleNumber
-        
+
         // Bind Buffers
         // Constants
         var numParticles = UInt32(self.particleNumber)
@@ -429,6 +430,8 @@ class PhysicRenderPass {
         encoder.setBytes(&viscosityValue, length: MemoryLayout<Float>.stride, index: ViscosityBuffer.index)
         var dtValue = self.dtValue
         encoder.setBytes(&dtValue, length: MemoryLayout<Float>.stride, index: DTBuffer.index)
+        var gravityMultiplier = self.gravityMultiplier
+        encoder.setBytes(&gravityMultiplier, length: MemoryLayout<Float>.stride, index: GravityBuffer.index)
         // Physics
         encoder.setBuffer(self.densityBuffer, offset: 0, index: DensityBuffer.index)
         encoder.setBuffer(self.pressureBuffer, offset: 0, index: PressureBuffer.index)
@@ -491,6 +494,10 @@ extension PhysicRenderPass {
 
     func updateViscosity(_ value: Float) {
         viscosity = value
+    }
+
+    func updateGravityMultiplier(_ value: Float) {
+        gravityMultiplier = value
     }
 
     func updateParticleSize(_ value: Float) {

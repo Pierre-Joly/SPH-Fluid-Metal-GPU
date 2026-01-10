@@ -12,6 +12,7 @@ struct SimulationSurface: View {
     @Binding var dtValue: Float
     @Binding var substeps: Int
     @Binding var viscosity: Float
+    @Binding var gravityMultiplier: Float
     @Binding var renderMode: RenderMode
     @Binding var gridResolution: Int
 
@@ -27,6 +28,7 @@ struct SimulationSurface: View {
             dtValue: $dtValue,
             substeps: $substeps,
             viscosity: $viscosity,
+            gravityMultiplier: $gravityMultiplier,
             renderMode: $renderMode,
             gridResolution: $gridResolution
         )

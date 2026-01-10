@@ -32,6 +32,7 @@ kernel void force(
     constant float      &stiffnessValue       [[buffer(StiffnessBuffer)]],
     constant float      &restDensityValue     [[buffer(RestDensityBuffer)]],
     constant float      &viscosityValue       [[buffer(ViscosityBuffer)]],
+    constant float      &gravityMultiplier    [[buffer(GravityBuffer)]],
 
     uint id [[thread_position_in_grid]]
 ){
@@ -51,7 +52,7 @@ kernel void force(
     float  density  = densities[id];
 
     // Forces
-    float2 externalForce  = density * g;
+    float2 externalForce  = density * g * gravityMultiplier;
     float2 pressureForce  = float2(0.0f, 0.0f);
     float2 viscosityForce = float2(0.0f, 0.0f);
 

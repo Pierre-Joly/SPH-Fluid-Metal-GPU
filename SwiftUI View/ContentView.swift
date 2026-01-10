@@ -4,8 +4,9 @@ struct ContentView: View {
     @State private var particleSize: Float = 0.005
     @State private var restDensity: Float = 1000.0
     @State private var stiffness: Float = 1e5
-    @State private var viscosity: Float = 1e-3
-    @State private var particleCount: Int = 16_384
+    @State private var viscosity: Float = 1e-2
+    @State private var gravityMultiplier: Float = 1.0
+    @State private var particleCount: Int = 50_000
     @State private var isRunning: Bool = true
     @State private var restartToken: Int = 0
     @State private var integrationMethod: IntegrationMethod = .rk4
@@ -27,6 +28,7 @@ struct ContentView: View {
                                 restDensity: $restDensity,
                                 stiffness: $stiffness,
                                 viscosity: $viscosity,
+                                gravityMultiplier: $gravityMultiplier,
                                 particleCount: $particleCount,
                                 isRunning: $isRunning,
                                 restartToken: $restartToken,
@@ -48,6 +50,7 @@ struct ContentView: View {
                                 dtValue: $dtValue,
                                 substeps: $substeps,
                                 viscosity: $viscosity,
+                                gravityMultiplier: $gravityMultiplier,
                                 renderMode: $renderMode,
                                 gridResolution: $gridResolution
                             )
@@ -59,6 +62,7 @@ struct ContentView: View {
                                 restDensity: $restDensity,
                                 stiffness: $stiffness,
                                 viscosity: $viscosity,
+                                gravityMultiplier: $gravityMultiplier,
                                 particleCount: $particleCount,
                                 isRunning: $isRunning,
                                 restartToken: $restartToken,
@@ -80,6 +84,7 @@ struct ContentView: View {
                                 dtValue: $dtValue,
                                 substeps: $substeps,
                                 viscosity: $viscosity,
+                                gravityMultiplier: $gravityMultiplier,
                                 renderMode: $renderMode,
                                 gridResolution: $gridResolution
                             )

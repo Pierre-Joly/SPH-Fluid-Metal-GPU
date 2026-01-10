@@ -35,6 +35,7 @@ typedef enum BufferIndices {
     ForceK4Buffer = 19,
     CellIdsBuffer = 20,
     MortonCodeBuffer = CellIdsBuffer,
+    GravityBuffer = CellIdsBuffer,
     MortonTempBuffer = ForceBuffer,
     ParticleIdsBuffer = 21,
     CellStartBuffer = 22,

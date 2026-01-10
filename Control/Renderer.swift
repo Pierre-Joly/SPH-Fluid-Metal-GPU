@@ -35,18 +35,20 @@ class Renderer: NSObject {
     var stiffness: Float
     var restDensity: Float
     var viscosity: Float
+    var gravityMultiplier: Float
     var integrationMethod: IntegrationMethod
     var dtValue: Float
     var substeps: Int
     var renderMode: RenderMode
     var gridResolution: Int
     
-    init(metalView: MTKView, particleNumber: Int, particleSize: Float, stiffness: Float, restDensity: Float, viscosity: Float, integrationMethod: IntegrationMethod, dtValue: Float, substeps: Int, renderMode: RenderMode, gridResolution: Int) {
+    init(metalView: MTKView, particleNumber: Int, particleSize: Float, stiffness: Float, restDensity: Float, viscosity: Float, gravityMultiplier: Float, integrationMethod: IntegrationMethod, dtValue: Float, substeps: Int, renderMode: RenderMode, gridResolution: Int) {
         self.particleNumber = particleNumber
         self.particleSize = particleSize
         self.stiffness = stiffness
         self.restDensity = restDensity
         self.viscosity = viscosity
+        self.gravityMultiplier = gravityMultiplier
         self.integrationMethod = integrationMethod
         self.dtValue = dtValue
         self.substeps = substeps
@@ -78,6 +80,7 @@ class Renderer: NSObject {
                                                  stiffness: stiffness,
                                                  restDensity: restDensity,
                                                  viscosity: viscosity,
+                                                 gravityMultiplier: gravityMultiplier,
                                                  integrationMethod: integrationMethod,
                                                  dtValue: dtValue,
                                                  substeps: substeps)
@@ -156,6 +159,11 @@ extension Renderer {
     func updateViscosity(_ value: Float) {
         viscosity = value
         physicRenderPass.updateViscosity(value)
+    }
+
+    func updateGravityMultiplier(_ value: Float) {
+        gravityMultiplier = value
+        physicRenderPass.updateGravityMultiplier(value)
     }
 
     func updateStiffness(_ value: Float) {
