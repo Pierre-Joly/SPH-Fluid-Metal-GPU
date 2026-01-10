@@ -24,7 +24,7 @@ This repository contains an **educational** Smooth Particle Hydrodynamics (SPH) 
 
 ### What is SPH?
 
-**Smooth Particle Hydrodynamics (SPH)** is a computational method for simulating fluid flows. Unlike grid-based approaches, SPH represents fluids as a collection of discrete particles—making it especially useful for free-surface flow and complex boundary interactions. This method uses a **Lagrangian** point of view, in contrast to the **Eulerian** framework found in many grid-based simulations. While SPH tends to be more suitable for real-time applications, it can be less precise than methods like Finite Element Analysis (FEA).
+**Smooth Particle Hydrodynamics (SPH)** is a computational method for simulating fluid flows. Unlike grid-based approaches, SPH represents fluids as a collection of discrete particles making it especially useful for free surface flow and complex boundary interactions. This method uses a **Lagrangian** point of view, in contrast to the **Eulerian** framework found in many grid based simulations.
 
 This project leverages **Metal** to perform computations directly on Apple GPUs, ensuring highly efficient simulations on compatible macOS and iOS devices.
 
@@ -35,7 +35,7 @@ This project leverages **Metal** to perform computations directly on Apple GPUs,
 
 ### Why Metal?
 
-[Metal](https://developer.apple.com/metal/) is a low-level, low-overhead hardware-accelerated 3D graphic and compute shader API created by Apple. By using Metal, we can:
+[Metal](https://developer.apple.com/metal/) is a low level, low overhead hardware accelerated 3D graphic and compute shader API created by Apple. By using Metal, we can:
 - Exploit the full capabilities of Apple GPUs.
 - Achieve better performance over higher-level APIs.
 - Have more control over memory and rendering pipelines.
