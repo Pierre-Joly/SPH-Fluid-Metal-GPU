@@ -30,8 +30,8 @@ This project leverages **Metal** to perform computations directly on Apple GPUs,
 
 ## Screenshots
 
-![Simulation particle mode](image/particle.jpeg)
-![Simulation density mode](image/density.jpeg)
+![Simulation particle mode](SPH/image/particle.jpeg)
+![Simulation density mode](SPH/image/density.jpeg)
 
 ### Why Metal?
 
