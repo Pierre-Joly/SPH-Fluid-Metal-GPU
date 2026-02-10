@@ -10,7 +10,7 @@ struct GraphicRenderPass {
     
     var quad: QuadModel
     
-    // Buffer provenant du PhysicRenderPass
+    // Buffer coming from PhysicRenderPass
     var positionBuffer: MTLBuffer
     var velocityBuffer: MTLBuffer
     var densityGridBuffer: MTLBuffer
@@ -29,7 +29,7 @@ struct GraphicRenderPass {
     var accumulateDensityGridPSO: MTLComputePipelineState
     var densityToTexturePSO: MTLComputePipelineState
     
-    // Add properties for the texture and sampler
+    // Properties for the texture and sampler
     var circleTexture: MTLTexture
     var samplerState: MTLSamplerState
     
@@ -39,6 +39,7 @@ struct GraphicRenderPass {
         
     init(view: MTKView, device: MTLDevice, physicPass: PhysicRenderPass, quad: QuadModel, camera: OrthographicCamera, particleSize: Float, renderMode: RenderMode, gridResolution: Int) {
             self.device = device
+
             // Create the pipeline state and retrieve the vertex function
             let (pso, vertexFunc) = PipelineStates.createGraphicPSO(colorPixelFormat: view.colorPixelFormat)
             self.graphicPSO = pso
@@ -59,6 +60,7 @@ struct GraphicRenderPass {
             uniforms.projectionMatrix = camera.projectionMatrix
             uniforms.viewMatrix = camera.viewMatrix
             self.uniforms = uniforms
+            
             self.particleSize = particleSize
             self.densityScale = 0.02
             self.viewWidth = Float(camera.viewSize) * Float(camera.aspect)
