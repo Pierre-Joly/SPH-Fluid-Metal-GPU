@@ -119,7 +119,7 @@
 				B5C6DC382C7C01F30000638C /* Assets.xcassets */,
 				B5C6DC3D2C7C01F30000638C /* SPH.entitlements */,
 			);
-			path = SPH;
+			path = "";
 			sourceTree = "<group>";
 		};
 		B5C6DC432C7C024C0000638C /* Shaders */ = {
