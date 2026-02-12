@@ -1,0 +1,27 @@
+# ---------------------------
+# Xcode / macOS
+# ---------------------------
+.DS_Store
+DerivedData/
+build/
+
+# Xcode user data (NEVER COMMIT)
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# Workspace user data
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Package resolution (optional but common to keep)
+# Package.resolved
+
+# ---------------------------
+# Misc
+# ---------------------------
+*.moved-aside
+*.pbxuser
