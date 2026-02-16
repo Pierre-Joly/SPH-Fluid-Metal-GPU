@@ -3,8 +3,7 @@ import MetalKit
 enum IntegrationMethod: String, CaseIterable, Identifiable {
     case rk4 = "RK4"
     case rk2 = "RK2"
-    case predictorCorrector = "PC"
-    case verlet = "Verlet"
+    case predictorCorrector = "Predictor-Corrector"
 
     var id: String { rawValue }
     var label: String { rawValue }

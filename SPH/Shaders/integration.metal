@@ -70,31 +70,6 @@ kernel void integrateRK4Results(device float2 *positions [[buffer(PositionBuffer
     velocities[id] += (dtValue / 6.0f) * (forcesK1[id] + 2.0f * (forcesK2[id] + forcesK3[id]) + forcesK4[id]);
 }
 
-kernel void verlet_step1(device float2 *positions [[buffer(PositionBuffer)]],
-                         device const float2 *velocities [[buffer(VelocityBuffer)]],
-                         device float2 *velocitiesHalf [[buffer(VelocityK1Buffer)]],
-                         device const float2 *forces [[buffer(ForceK1Buffer)]],
-                         constant const float &dtValue [[buffer(DTBuffer)]],
-                         constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
-                         uint id [[thread_position_in_grid]]) {
-    if (id >= numParticles) return;
-
-    float2 vHalf = velocities[id] + 0.5f * dtValue * forces[id];
-    positions[id] += dtValue * vHalf;
-    velocitiesHalf[id] = vHalf;
-}
-
-kernel void verlet_step2(device float2 *velocities [[buffer(VelocityBuffer)]],
-                         device const float2 *velocitiesHalf [[buffer(VelocityK1Buffer)]],
-                         device const float2 *forces [[buffer(ForceK2Buffer)]],
-                         constant const float &dtValue [[buffer(DTBuffer)]],
-                         constant const uint &numParticles [[buffer(NumParticlesBuffer)]],
-                         uint id [[thread_position_in_grid]]) {
-    if (id >= numParticles) return;
-
-    velocities[id] = velocitiesHalf[id] + 0.5f * dtValue * forces[id];
-}
-
 kernel void integrateRK2Results(device float2 *positions [[buffer(PositionBuffer)]],
                                 device float2 *velocities [[buffer(VelocityBuffer)]],
                                 device const float2 *velocitiesMid [[buffer(VelocityK1Buffer)]],

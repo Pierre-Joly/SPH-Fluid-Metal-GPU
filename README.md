@@ -46,7 +46,7 @@ This project leverages **Metal** to perform computations directly on Apple GPUs,
 
 - **GPU-based SPH solver** with per-frame compute pipelines for density, forces, and integration.
 - **Spatial hashing with Morton codes + radix sort** to build cell ranges for neighbor search.
-- **Multiple integrators**: RK4, RK2, predictor-corrector, and Verlet.
+- **Multiple integrators**: RK4, RK2, and predictor-corrector.
 - **Render modes**: particle sprites, density field, and velocity field.
 - **SwiftUI control panel** for particle count, timestep, viscosity, stiffness, and more.
 
@@ -90,9 +90,10 @@ SPH
 │   └── Camera.swift
 ├── Render/                          // Render passes and pipelines
 │   ├── PhysicRenderPass.swift
-│   ├── PhysicRenderPass+RK4.swift
-│   ├── PhysicRenderPass+RK2.swift
-│   ├── PhysicRenderPass+Verlet.swift
+│   ├── Integrators/
+│   │   ├── PhysicRenderPassRungeKutta4.swift
+│   │   ├── PhysicRenderPassRungeKutta2.swift
+│   │   └── PhysicRenderPassPredictorCorrector.swift
 │   └── GraphicRenderPass.swift
 ├── Shaders/                         // Metal compute + render kernels
 ├── Geometry/                        // Quad model + transforms

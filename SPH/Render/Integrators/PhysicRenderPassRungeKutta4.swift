@@ -1,7 +1,7 @@
 import MetalKit
 
 extension PhysicRenderPass {
-    func runRK4(encoder: MTLComputeCommandEncoder) {
+    func runRungeKutta4(encoder: MTLComputeCommandEncoder) {
         // Runge Kutta 4 - Step 1
         encoder.setBuffer(self.positionBuffer, offset: 0, index: PositionBuffer.index)
         encoder.setBuffer(self.velocityBuffer, offset: 0, index: VelocityBuffer.index)

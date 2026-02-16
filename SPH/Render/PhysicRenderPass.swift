@@ -9,8 +9,6 @@ class PhysicRenderPass {
     var rk4Step2PSO: MTLComputePipelineState
     var rk4Step3PSO: MTLComputePipelineState
     var rk4FinalPSO: MTLComputePipelineState
-    var verletStep1PSO: MTLComputePipelineState
-    var verletStep2PSO: MTLComputePipelineState
     var rk2FinalPSO: MTLComputePipelineState
     var pcPredictPSO: MTLComputePipelineState
     var pcCorrectPSO: MTLComputePipelineState
@@ -127,8 +125,6 @@ class PhysicRenderPass {
         self.rk4Step2PSO = PipelineStates.createComputePSO(function: "rk4_step2")
         self.rk4Step3PSO = PipelineStates.createComputePSO(function: "rk4_step3")
         self.rk4FinalPSO = PipelineStates.createComputePSO(function: "integrateRK4Results")
-        self.verletStep1PSO = PipelineStates.createComputePSO(function: "verlet_step1")
-        self.verletStep2PSO = PipelineStates.createComputePSO(function: "verlet_step2")
         self.rk2FinalPSO = PipelineStates.createComputePSO(function: "integrateRK2Results")
         self.pcPredictPSO = PipelineStates.createComputePSO(function: "pc_predict")
         self.pcCorrectPSO = PipelineStates.createComputePSO(function: "pc_correct")
@@ -465,11 +461,9 @@ class PhysicRenderPass {
 
         switch integrationMethod {
         case .rk4:
-            runRK4(encoder: encoder)
-        case .verlet:
-            runVerlet(encoder: encoder)
+            runRungeKutta4(encoder: encoder)
         case .rk2:
-            runRK2(encoder: encoder)
+            runRungeKutta2(encoder: encoder)
         case .predictorCorrector:
             runPredictorCorrector(encoder: encoder)
         }

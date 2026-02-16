@@ -1,7 +1,7 @@
 import MetalKit
 
 extension PhysicRenderPass {
-    func runVerlet(encoder: MTLComputeCommandEncoder) {
+    func runRungeKutta2(encoder: MTLComputeCommandEncoder) {
         // Force at current state
         encoder.setBuffer(self.positionBuffer, offset: 0, index: PositionBuffer.index)
         encoder.setBuffer(self.velocityBuffer, offset: 0, index: VelocityBuffer.index)
@@ -19,12 +19,12 @@ extension PhysicRenderPass {
         encoder.setComputePipelineState(self.forcePSO)
         encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
 
-        // Advance positions, build half velocity - Step 1
-        encoder.setComputePipelineState(self.verletStep1PSO)
+        // Midpoint prediction using RK4 step1 kernel
+        encoder.setComputePipelineState(rk4Step1PSO)
         encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
 
-        // Force at new positions (use half velocity for viscosity)
-        encoder.setBuffer(self.positionBuffer, offset: 0, index: PositionBuffer.index)
+        // Force at midpoint
+        encoder.setBuffer(self.positionKBuffer, offset: 0, index: PositionBuffer.index)
         encoder.setBuffer(self.velocityK1Buffer, offset: 0, index: VelocityBuffer.index)
 
         encoder.setComputePipelineState(reorderPositionsVelocitiesPSO)
@@ -40,8 +40,10 @@ extension PhysicRenderPass {
         encoder.setComputePipelineState(self.forcePSO)
         encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
 
-        // Finalize velocity - Step 2
-        encoder.setComputePipelineState(self.verletStep2PSO)
+        // Final integration
+        encoder.setBuffer(self.positionBuffer,  offset: 0, index: PositionBuffer.index)
+        encoder.setBuffer(self.velocityBuffer, offset: 0, index: VelocityBuffer.index)
+        encoder.setComputePipelineState(self.rk2FinalPSO)
         encoder.dispatchThreadgroups(self.threadgroupCount, threadsPerThreadgroup: self.threadgroupSize)
     }
 }
