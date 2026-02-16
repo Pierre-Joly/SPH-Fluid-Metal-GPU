@@ -99,13 +99,6 @@ SPH
 ├── Geometry/                        // Quad model + transforms
 └── Utility/                         // Math helpers
 ```
-
-## TODO
-- [ ] Extend the simulation from **2D** to **3D**.
-- [ ] Add **multi-platform support for iOS**.
-- [ ] Add boundary shapes and emitters.
-- [ ] Improve stability for extreme particle counts and timesteps.
-
 ---
 
 ## License
